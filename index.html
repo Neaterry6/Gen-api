@@ -1,288 +1,269 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fluxora • AI Image Studio</title>
+    <title>Fluxora • AI Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
         
-        :root {
-            --primary: 234 179 8;
-        }
-        
-        body {
-            font-family: 'Inter', system_ui, sans-serif;
-        }
-        
-        .logo-font {
-            font-family: 'Space Grotesk', sans-serif;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .logo-font { font-family: 'Space Grotesk', sans-serif; }
 
-        .glass {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-        }
+        .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+        .light .glass { background: rgba(255,255,255,0.75); border-color: rgb(0 0 0 / 0.1); }
 
-        .light .glass {
-            background: rgba(255, 255, 255, 0.7);
-            border-color: rgb(0 0 0 / 0.1);
-        }
+        .gradient-bg { background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e); }
+        .light .gradient-bg { background: linear-gradient(135deg, #f8fafc, #e0f2fe, #dbeafe); }
 
-        .card-hover {
-            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-12px) scale(1.02);
-        }
+        .card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-12px) scale(1.02); }
 
-        .gradient-bg {
-            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
-        }
-        
-        .light .gradient-bg {
-            background: linear-gradient(135deg, #f8fafc, #e0f2fe, #dbeafe);
-        }
-
-        .blob {
-            animation: blob 30s infinite ease-in-out;
-        }
-
+        .blob { animation: blob 25s infinite ease-in-out; }
         @keyframes blob {
-            0%, 100% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(120px, 80px) scale(1.15); }
-            66% { transform: translate(-80px, 140px) scale(0.85); }
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(150px, 100px) scale(1.1); }
+            66% { transform: translate(-100px, 150px) scale(0.9); }
         }
-
-        .image-container {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .image-container img {
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .image-container:hover img {
-            transform: scale(1.1);
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        .light .skeleton {
-            background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .modal-content {
-            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes modalPop {
-            from { transform: scale(0.7); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        pre { font-size: 0.85rem; line-height: 1.5; }
     </style>
 </head>
-<body class="gradient-bg text-white min-h-screen pb-20 dark">
-    <!-- Background -->
+<body class="gradient-bg text-white min-h-screen pb-24">
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute top-10 left-10 w-[500px] h-[500px] bg-yellow-400/10 rounded-full blur-3xl blob"></div>
-        <div class="absolute bottom-20 right-20 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl blob" style="animation-delay: -12s"></div>
+        <div class="absolute top-20 left-20 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl blob"></div>
+        <div class="absolute bottom-40 right-32 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl blob" style="animation-delay: -12s"></div>
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
         <!-- Header -->
-        <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-8 gap-6">
-            <div class="flex items-center gap-x-3">
-                <div class="w-11 h-11 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center text-3xl font-bold logo-font shadow-inner">F</div>
-                <div>
-                    <span class="text-4xl font-bold tracking-tighter logo-font">Fluxora</span>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-x-8 text-sm font-medium">
-                <a href="#" onclick="showSection('generator')" class="nav-link active hover:text-yellow-400 transition-colors">Create</a>
-                <a href="#" onclick="showSection('gallery')" class="nav-link hover:text-yellow-400 transition-colors">Gallery</a>
-                <a href="#" onclick="showSection('api')" class="nav-link hover:text-yellow-400 transition-colors">API</a>
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-8 gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center text-3xl font-bold logo-font">F</div>
+                <span class="text-4xl font-bold tracking-tighter logo-font">Fluxora</span>
             </div>
 
-            <div class="flex items-center gap-x-4">
-                <!-- Theme Toggle -->
-                <button onclick="toggleTheme()" id="theme-toggle"
-                    class="w-11 h-11 flex items-center justify-center rounded-2xl hover:bg-white/10 dark:hover:bg-white/10 transition-all">
-                    <i class="fa-solid fa-sun text-xl" id="theme-icon"></i>
+            <div class="flex gap-8 text-sm font-medium">
+                <a href="#" onclick="showSection('create')" class="nav-link active hover:text-yellow-400">Create</a>
+                <a href="#" onclick="showSection('gallery')" class="nav-link hover:text-yellow-400">Gallery</a>
+                <a href="#" onclick="showSection('api')" class="nav-link hover:text-yellow-400">API</a>
+                <a href="#" onclick="showSection('credits')" class="nav-link hover:text-yellow-400">Credits</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button onclick="toggleTheme()" class="w-11 h-11 flex items-center justify-center rounded-2xl hover:bg-white/10 transition">
+                    <i class="fa-solid fa-moon text-xl" id="theme-icon"></i>
                 </button>
-                
-                <button onclick="clearGallery()" 
-                    class="px-5 py-2.5 text-sm font-medium bg-white/10 hover:bg-white/20 rounded-2xl transition-colors flex items-center gap-x-2">
-                    <i class="fa-solid fa-trash-can"></i>
-                    <span class="hidden sm:inline">Clear</span>
+                <button onclick="clearGallery()" class="px-5 py-2 text-sm bg-white/10 hover:bg-white/20 rounded-2xl flex items-center gap-2">
+                    <i class="fa-solid fa-trash"></i><span class="hidden sm:inline">Clear</span>
                 </button>
             </div>
         </header>
 
         <!-- Stats -->
-        <div class="grid grid-cols-3 gap-4 mb-12" id="stats"></div>
+        <div id="stats" class="grid grid-cols-3 gap-4 mb-10"></div>
 
-        <!-- Generator -->
-        <div id="generator-section">
+        <!-- CREATE SECTION -->
+        <div id="create-section">
             <div class="max-w-3xl mx-auto">
                 <div class="text-center mb-10">
-                    <h1 class="text-5xl sm:text-6xl font-bold tracking-tighter logo-font mb-4">Instant AI Magic</h1>
-                    <p class="text-xl text-gray-400 dark:text-gray-400">Powered by Pollinations &amp; FLUX • Beautiful images in seconds</p>
+                    <h1 class="text-5xl sm:text-6xl font-bold tracking-tighter logo-font">AI Studio</h1>
+                    <p class="text-gray-400 mt-2">Free • Fast • No login required</p>
                 </div>
 
-                <div class="glass border border-white/10 dark:border-white/10 rounded-3xl p-2 shadow-2xl">
-                    <textarea id="prompt" rows="4"
-                        class="w-full bg-transparent px-8 py-6 text-lg resize-none outline-none placeholder:text-gray-400 rounded-3xl"
-                        placeholder="A majestic cybernetic lion standing on a floating island at golden hour..."></textarea>
-                    
-                    <div class="flex flex-wrap items-center gap-4 border-t border-white/10 dark:border-white/10 pt-6 px-8 pb-2">
+                <!-- Mode Tabs -->
+                <div class="flex bg-white/5 rounded-3xl p-1 mb-8 w-fit mx-auto">
+                    <button onclick="switchMode(0)" id="tab-0" class="tab-btn px-6 py-3 rounded-3xl font-medium active">Image</button>
+                    <button onclick="switchMode(1)" id="tab-1" class="tab-btn px-6 py-3 rounded-3xl font-medium">Video</button>
+                    <button onclick="switchMode(2)" id="tab-2" class="tab-btn px-6 py-3 rounded-3xl font-medium">Chat</button>
+                    <button onclick="switchMode(3)" id="tab-3" class="tab-btn px-6 py-3 rounded-3xl font-medium">Edit</button>
+                </div>
+
+                <div class="glass border border-white/10 rounded-3xl p-8">
+                    <textarea id="prompt" rows="4" class="w-full bg-transparent text-lg resize-none outline-none placeholder:text-gray-400" 
+                        placeholder="A majestic cybernetic lion standing on a floating island..."></textarea>
+
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-xs text-gray-400 mb-1">MODEL</label>
-                            <select id="provider" class="bg-zinc-900 dark:bg-white border border-white/20 dark:border-zinc-300 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-yellow-400">
-                                <option value="pollinations">Pollinations (Fast)</option>
-                                <option value="flux">FLUX Schnell</option>
+                            <label class="text-xs text-gray-400 block mb-2">MODEL</label>
+                            <select id="provider" class="w-full bg-zinc-900 border border-white/20 rounded-2xl px-5 py-3 focus:border-yellow-400">
+                                <option value="pollinations">Pollinations Flux (Best)</option>
+                                <option value="flux-schnell">FLUX Schnell (HF)</option>
+                                <option value="sd3.5">Stable Diffusion 3.5</option>
+                                <option value="nano-banana">Nano Banana 2</option>
+                                <option value="seedream">Seedream 5.0</option>
+                                <option value="photon">Photon</option>
                             </select>
                         </div>
-                        
-                        <div class="flex-1 min-w-0">
-                            <label class="block text-xs text-gray-400 mb-1">DIMENSIONS</label>
+
+                        <div id="extra-params">
+                            <label class="text-xs text-gray-400 block mb-2">DIMENSIONS</label>
                             <div class="flex gap-3">
-                                <input type="number" id="width" value="1024" class="w-full bg-zinc-900 dark:bg-white border border-white/20 dark:border-zinc-300 rounded-2xl px-5 py-3 text-center focus:outline-none focus:border-yellow-400">
+                                <input type="number" id="width" value="1024" class="w-full bg-zinc-900 border border-white/20 rounded-2xl px-5 py-3 text-center">
                                 <span class="self-center text-gray-400">×</span>
-                                <input type="number" id="height" value="1024" class="w-full bg-zinc-900 dark:bg-white border border-white/20 dark:border-zinc-300 rounded-2xl px-5 py-3 text-center focus:outline-none focus:border-yellow-400">
+                                <input type="number" id="height" value="1024" class="w-full bg-zinc-900 border border-white/20 rounded-2xl px-5 py-3 text-center">
                             </div>
                         </div>
-                        
-                        <button onclick="generateImage()" 
-                            class="mt-6 sm:mt-0 px-12 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:brightness-110 active:scale-95 transition-all text-black font-semibold rounded-2xl flex items-center gap-x-3 shadow-xl shadow-yellow-500/40 text-lg">
-                            <i class="fa-solid fa-sparkles"></i>
-                            <span>GENERATE</span>
-                        </button>
                     </div>
-                </div>
 
-                <!-- Quick Prompts -->
-                <div class="flex flex-wrap gap-3 justify-center mt-10">
-                    <button onclick="useExample(this)" class="text-xs sm:text-sm px-6 py-3 bg-white/5 hover:bg-white/10 dark:hover:bg-black/10 rounded-3xl transition-colors border border-white/10">futuristic Lagos skyline at dusk</button>
-                    <button onclick="useExample(this)" class="text-xs sm:text-sm px-6 py-3 bg-white/5 hover:bg-white/10 dark:hover:bg-black/10 rounded-3xl transition-colors border border-white/10">ethereal crystal dragon in mist</button>
-                    <button onclick="useExample(this)" class="text-xs sm:text-sm px-6 py-3 bg-white/5 hover:bg-white/10 dark:hover:bg-black/10 rounded-3xl transition-colors border border-white/10">neon samurai cat in cyberpunk alley</button>
+                    <button onclick="generate()" class="mt-8 w-full py-5 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-semibold rounded-3xl text-lg flex items-center justify-center gap-3 hover:brightness-110">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span id="generate-btn-text">GENERATE IMAGE</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Gallery -->
+        <!-- GALLERY SECTION -->
         <div id="gallery-section" class="hidden">
-            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+            <div class="flex justify-between items-end mb-8">
                 <div>
                     <h2 class="text-4xl font-semibold tracking-tight">Your Gallery</h2>
-                    <p class="text-gray-400" id="gallery-count">0 images</p>
+                    <p id="gallery-count" class="text-gray-400">0 creations</p>
                 </div>
-                
-                <div class="relative w-full sm:w-80">
-                    <input id="search-input" type="text" 
-                        class="w-full bg-white/5 dark:bg-white/10 border border-white/10 dark:border-white/20 rounded-3xl py-4 pl-12 pr-6 outline-none focus:border-yellow-400 placeholder:text-gray-400"
-                        placeholder="Search your creations...">
-                    <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                </div>
+                <input id="search" type="text" placeholder="Search creations..." class="bg-white/5 border border-white/10 rounded-3xl px-6 py-4 w-80 focus:border-yellow-400 outline-none">
             </div>
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </div>
 
-            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- JS populated -->
+        <!-- API SECTION -->
+        <div id="api-section" class="hidden">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-5xl font-bold tracking-tighter mb-3">API Documentation</h2>
+                <p class="text-gray-400 mb-10">Base URL: <span class="font-mono text-yellow-400">https://gen-sand-chi.vercel.app/api/generate</span></p>
+
+                <div class="space-y-12">
+                    <!-- Image -->
+                    <div class="glass rounded-3xl p-8">
+                        <div class="flex justify-between mb-6">
+                            <h3 class="text-2xl font-semibold">Image / Video / Edit</h3>
+                            <button onclick="copyCode(this)" data-code="curl -X POST https://gen-sand-chi.vercel.app/api/generate -H 'Content-Type: application/json' -d '{\"prompt\": \"A majestic dragon flying over Lagos\", \"provider\": \"pollinations\", \"type\": \"image\"}'" class="copy-btn px-5 py-2 bg-white/10 hover:bg-white/20 rounded-2xl text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-copy"></i> Copy cURL
+                            </button>
+                        </div>
+                        <pre class="bg-zinc-950 p-6 rounded-2xl overflow-auto"><code>curl -X POST https://gen-sand-chi.vercel.app/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "A majestic dragon flying over Lagos at sunset",
+    "provider": "pollinations",
+    "type": "image",
+    "width": 1024,
+    "height": 1024
+  }'</code></pre>
+                    </div>
+
+                    <!-- Chat -->
+                    <div class="glass rounded-3xl p-8">
+                        <div class="flex justify-between mb-6">
+                            <h3 class="text-2xl font-semibold">Chat AI</h3>
+                            <button onclick="copyCode(this)" data-code="curl -X POST https://gen-sand-chi.vercel.app/api/generate -H 'Content-Type: application/json' -d '{\"prompt\": \"Explain quantum computing\", \"provider\": \"pollinations\", \"type\": \"chat\"}'" class="copy-btn px-5 py-2 bg-white/10 hover:bg-white/20 rounded-2xl text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-copy"></i> Copy cURL
+                            </button>
+                        </div>
+                        <pre class="bg-zinc-950 p-6 rounded-2xl overflow-auto"><code>curl -X POST https://gen-sand-chi.vercel.app/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "prompt": "Explain quantum computing in simple terms",
+    "provider": "pollinations",
+    "type": "chat"
+  }'</code></pre>
+                    </div>
+
+                    <!-- Python -->
+                    <div class="glass rounded-3xl p-8">
+                        <div class="flex justify-between mb-6">
+                            <h3 class="text-xl font-semibold">Python</h3>
+                            <button onclick="copyCode(this)" data-code="import requests&#10;res = requests.post('https://gen-sand-chi.vercel.app/api/generate', json={'prompt': 'Cyberpunk cat', 'provider': 'pollinations', 'type': 'image'})&#10;print(res.json())" class="copy-btn px-5 py-2 bg-white/10 hover:bg-white/20 rounded-2xl text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre class="bg-zinc-950 p-6 rounded-2xl overflow-auto"><code>import requests
+
+response = requests.post(
+    "https://gen-sand-chi.vercel.app/api/generate",
+    json={"prompt": "Cyberpunk samurai cat", "provider": "pollinations", "type": "image"}
+)
+print(response.json())</code></pre>
+                    </div>
+
+                    <!-- JavaScript -->
+                    <div class="glass rounded-3xl p-8">
+                        <div class="flex justify-between mb-6">
+                            <h3 class="text-xl font-semibold">JavaScript</h3>
+                            <button onclick="copyCode(this)" data-code="fetch('https://gen-sand-chi.vercel.app/api/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({prompt:'Beautiful landscape', provider:'pollinations', type:'image'})}).then(r=>r.json()).then(console.log)" class="copy-btn px-5 py-2 bg-white/10 hover:bg-white/20 rounded-2xl text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <pre class="bg-zinc-950 p-6 rounded-2xl overflow-auto"><code>fetch('https://gen-sand-chi.vercel.app/api/generate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    prompt: "Beautiful mountain landscape",
+    provider: "pollinations",
+    type: "image"
+  })
+}).then(r => r.json()).then(console.log);</code></pre>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- API Docs -->
-        <div id="api-section" class="hidden">
-            <div class="max-w-4xl mx-auto">
-                <h2 class="text-5xl font-bold tracking-tighter mb-8">API Documentation</h2>
+        <!-- CREDITS SECTION -->
+        <div id="credits-section" class="hidden">
+            <div class="max-w-3xl mx-auto glass rounded-3xl p-12 text-center">
+                <div class="w-28 h-28 mx-auto mb-8 bg-gradient-to-br from-purple-500 via-pink-500 to-yellow-400 rounded-3xl flex items-center justify-center text-6xl shadow-xl">✦</div>
                 
-                <div class="glass rounded-3xl p-8 mb-10">
-                    <div class="flex items-center gap-3 mb-6">
-                        <span class="px-5 py-1.5 bg-emerald-500 text-black font-mono text-sm rounded-2xl">POST</span>
-                        <code class="text-lg font-medium">https://gen-sand-chi.vercel.app/api/generate</code>
-                    </div>
-                    
-                    <pre class="bg-black/70 dark:bg-zinc-900 p-6 rounded-2xl text-sm overflow-x-auto font-mono"><code>{
-  "prompt": "A beautiful sunset over the ocean",
-  "provider": "flux"
-}</code></pre>
+                <h2 class="text-5xl font-bold tracking-tighter logo-font mb-2">Broken Vzn</h2>
+                <p class="text-xl text-gray-400">Logic • Sound • Ink</p>
+                <p class="mt-4 text-lg max-w-md mx-auto">Multidisciplinary Creator &amp; Developer from Ibadan, Nigeria</p>
+
+                <div class="flex justify-center gap-8 mt-12">
+                    <a href="https://github.com/Neaterry6" target="_blank" class="flex flex-col items-center hover:text-yellow-400 transition-colors">
+                        <i class="fa-brands fa-github text-5xl mb-3"></i>
+                        <span class="text-sm">GitHub</span>
+                    </a>
+                    <a href="https://portfolio-neaterry6s-projects.vercel.app/" target="_blank" class="flex flex-col items-center hover:text-yellow-400 transition-colors">
+                        <i class="fa-solid fa-globe text-5xl mb-3"></i>
+                        <span class="text-sm">Portfolio</span>
+                    </a>
                 </div>
-                
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="font-semibold mb-4 text-lg">Supported Providers</h3>
-                        <ul class="space-y-3">
-                            <li class="flex items-center gap-3"><span class="text-emerald-400">●</span> pollinations (fast &amp; free)</li>
-                            <li class="flex items-center gap-3"><span class="text-emerald-400">●</span> flux (high quality)</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold mb-4 text-lg">Response</h3>
-                        <pre class="bg-black/70 dark:bg-zinc-900 p-5 rounded-2xl text-xs">{
-  "success": true,
-  "image": "https://...",
-  "prompt": "...",
-  "provider": "flux"
-}</pre>
-                    </div>
+
+                <div class="mt-16 pt-8 border-t border-white/10 text-sm text-gray-400">
+                    Thank you for using Fluxora.<br>
+                    Built as a single-file AI demo showcasing the power of free AI tools.
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Floating Action -->
-    <button onclick="showSection('generator')" 
-        class="fixed bottom-8 right-8 bg-gradient-to-br from-yellow-400 to-amber-500 text-black w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-2xl md:hidden z-50">
-        <i class="fa-solid fa-plus"></i>
-    </button>
-
-    <!-- Image Modal -->
+    <!-- Modal -->
     <div id="modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-        <div class="modal-content max-w-4xl w-full bg-zinc-900 dark:bg-white dark:text-black rounded-3xl overflow-hidden">
-            <div id="modal-image" class="aspect-video bg-black flex items-center justify-center"></div>
-            
-            <div class="p-8">
-                <p id="modal-prompt-text" class="text-lg leading-relaxed mb-8"></p>
-                
-                <div class="flex flex-wrap gap-4">
-                    <button onclick="downloadCurrent()" 
-                        class="flex-1 sm:flex-none px-8 py-4 bg-yellow-400 text-black rounded-2xl font-semibold flex items-center justify-center gap-3 hover:brightness-110">
-                        <i class="fa-solid fa-download"></i> Download
-                    </button>
-                    <button onclick="copyCurrentUrl()" 
-                        class="flex-1 sm:flex-none px-8 py-4 border border-white/30 dark:border-black/30 rounded-2xl font-medium flex items-center justify-center gap-3 hover:bg-white/10">
-                        <i class="fa-solid fa-copy"></i> Copy URL
-                    </button>
-                    <button onclick="closeModal()" 
-                        class="flex-1 sm:flex-none px-8 py-4 border border-white/30 dark:border-black/30 rounded-2xl font-medium">Close</button>
-                </div>
+        <div class="max-w-4xl w-full bg-zinc-900 rounded-3xl overflow-hidden">
+            <div id="modal-content" class="p-6"></div>
+            <div class="p-6 flex gap-4 border-t border-white/10">
+                <button onclick="downloadCurrent()" class="flex-1 py-4 bg-yellow-400 text-black rounded-2xl font-medium">Download</button>
+                <button onclick="closeModal()" class="flex-1 py-4 border border-white/30 rounded-2xl">Close</button>
             </div>
         </div>
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-800 dark:bg-white dark:text-black border border-yellow-400 text-yellow-400 px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-3 z-50">
-        <span id="toast-message"></span>
+    <div id="toast" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-zinc-800 border border-yellow-400 text-yellow-400 px-8 py-4 rounded-3xl shadow-2xl z-50">
+        <span id="toast-text"></span>
     </div>
 
     <script>
         let gallery = JSON.parse(localStorage.getItem('fluxora_gallery') || '[]');
-        let isDark = true;
-        let currentImageIndex = null;
+        let currentMode = 0;
+        let currentItem = null;
+
+        const modes = [
+            { btn: "GENERATE IMAGE", type: "image" },
+            { btn: "GENERATE VIDEO", type: "video" },
+            { btn: "SEND MESSAGE", type: "chat" },
+            { btn: "EDIT IMAGE", type: "edit" }
+        ];
 
         function saveGallery() {
             localStorage.setItem('fluxora_gallery', JSON.stringify(gallery));
@@ -292,122 +273,88 @@
             const total = gallery.length;
             const favs = gallery.filter(i => i.favorite).length;
             document.getElementById('stats').innerHTML = `
-                <div class="glass border border-white/10 dark:border-black/10 rounded-3xl p-6 text-center">
+                <div class="glass rounded-3xl p-6 text-center">
                     <div class="text-5xl font-bold">${total}</div>
-                    <div class="text-sm mt-1 text-gray-400">Creations</div>
+                    <div class="text-sm text-gray-400">Creations</div>
                 </div>
-                <div class="glass border border-white/10 dark:border-black/10 rounded-3xl p-6 text-center">
-                    <div class="text-5xl font-bold">2</div>
-                    <div class="text-sm mt-1 text-gray-400">Models</div>
+                <div class="glass rounded-3xl p-6 text-center">
+                    <div class="text-5xl font-bold">7</div>
+                    <div class="text-sm text-gray-400">Models</div>
                 </div>
-                <div class="glass border border-white/10 dark:border-black/10 rounded-3xl p-6 text-center">
+                <div class="glass rounded-3xl p-6 text-center">
                     <div class="text-5xl font-bold">${favs}</div>
-                    <div class="text-sm mt-1 text-gray-400">Favorites</div>
+                    <div class="text-sm text-gray-400">Favorites</div>
                 </div>
             `;
-        }
-
-        function timeAgo(ts) {
-            const diff = Math.floor((Date.now() - ts) / 1000);
-            if (diff < 60) return 'just now';
-            if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-            return Math.floor(diff/3600) + 'h ago';
         }
 
         function renderGallery(filtered = null) {
             const container = document.getElementById('gallery-grid');
             const items = filtered || gallery;
-            
-            document.getElementById('gallery-count').textContent = `${items.length} images`;
+            document.getElementById('gallery-count').textContent = `${items.length} creations`;
 
             if (items.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-20 text-center">
-                        <i class="fa-solid fa-image text-7xl opacity-20 mb-6"></i>
-                        <p class="text-xl text-gray-400">No images yet.<br>Generate something amazing!</p>
-                    </div>`;
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400">No creations yet. Generate something beautiful!</div>`;
                 return;
             }
 
-            let html = '';
-            items.forEach((item, idx) => {
-                const globalIndex = gallery.indexOf(item);
-                html += `
-                <div class="group bg-zinc-900/80 dark:bg-white/80 border border-white/10 dark:border-black/10 rounded-3xl overflow-hidden card-hover">
-                    <div onclick="openModal(${globalIndex})" class="image-container aspect-[4/3] cursor-pointer">
-                        <img src="\( {item.url}" class="w-full h-full object-cover" alt=" \){item.prompt}">
+            container.innerHTML = items.map((item, idx) => `
+                <div class="bg-zinc-900/70 border border-white/10 rounded-3xl overflow-hidden card-hover">
+                    <div onclick="openModal(${gallery.indexOf(item)})" class="cursor-pointer">
+                        ${item.type === 'video' ? 
+                            `<video src="${item.url}" class="w-full aspect-video object-cover" muted></video>` : 
+                            `<img src="${item.url}" class="w-full aspect-square object-cover">`}
                     </div>
-                    <div class="p-5">
-                        <p class="line-clamp-2 text-sm mb-4 text-gray-300 dark:text-gray-700">${item.prompt}</p>
-                        <div class="flex justify-between text-xs items-center">
-                            <span class="text-gray-500">${timeAgo(item.timestamp)}</span>
-                            <div class="flex gap-5 text-xl">
-                                <button onclick="toggleFavorite(\( {globalIndex}); event.stopImmediatePropagation()" class=" \){item.favorite ? 'text-red-500' : 'text-gray-400'} hover:scale-110 transition">
-                                    ${item.favorite ? '♥' : '♡'}
-                                </button>
-                                <button onclick="copyImageUrl('${item.url}'); event.stopImmediatePropagation()" class="hover:text-yellow-400 transition">📋</button>
-                                <button onclick="downloadImage('\( {item.url}', ' \){item.prompt}'); event.stopImmediatePropagation()" class="hover:text-yellow-400 transition">↓</button>
-                                <button onclick="deleteImage(${globalIndex}); event.stopImmediatePropagation()" class="hover:text-red-400 transition">🗑</button>
+                    <div class="p-4">
+                        <p class="line-clamp-2 text-sm mb-3">${item.prompt}</p>
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>${new Date(item.timestamp).toLocaleDateString()}</span>
+                            <div class="flex gap-4">
+                                <button onclick="toggleFavorite(\( {gallery.indexOf(item)});event.stopImmediatePropagation()" class=" \){item.favorite ? 'text-red-400' : 'text-gray-400'}">♥</button>
+                                <button onclick="copyUrl('${item.url}');event.stopImmediatePropagation()">📋</button>
                             </div>
                         </div>
                     </div>
-                </div>`;
-            });
-            container.innerHTML = html;
+                </div>
+            `).join('');
         }
 
-        async function generateImage() {
-            const promptEl = document.getElementById('prompt');
-            const prompt = promptEl.value.trim();
-            if (!prompt) return showToast("Enter a prompt first", true);
+        async function generate() {
+            const prompt = document.getElementById('prompt').value.trim();
+            if (!prompt) return showToast("Please enter a prompt", true);
+
+            const provider = document.getElementById('provider').value;
+            const type = modes[currentMode].type;
 
             showSection('gallery');
-
-            const loadingId = 'load-' + Date.now();
-            document.getElementById('gallery-grid').insertAdjacentHTML('afterbegin', `
-                <div id="${loadingId}" class="bg-zinc-900/70 dark:bg-white/70 rounded-3xl overflow-hidden">
-                    <div class="aspect-[4/3] skeleton"></div>
-                    <div class="p-5 space-y-3">
-                        <div class="h-4 bg-zinc-700 dark:bg-zinc-200 rounded w-4/5"></div>
-                        <div class="h-3 bg-zinc-700 dark:bg-zinc-200 rounded w-1/2"></div>
-                    </div>
-                </div>
-            `);
+            const loadingId = 'loading-' + Date.now();
+            document.getElementById('gallery-grid').insertAdjacentHTML('afterbegin', `<div id="${loadingId}" class="bg-zinc-900/70 rounded-3xl p-4"><div class="aspect-video bg-gradient-to-r from-zinc-700 to-zinc-800 animate-pulse rounded-2xl"></div></div>`);
 
             try {
-                const provider = document.getElementById('provider').value;
-                const width = parseInt(document.getElementById('width').value) || 1024;
-                const height = parseInt(document.getElementById('height').value) || 1024;
-
                 const res = await fetch('https://gen-sand-chi.vercel.app/api/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt, provider })
+                    body: JSON.stringify({ prompt, provider, type })
                 });
-
                 const data = await res.json();
-
-                if (!data.success || !data.image) throw new Error(data.error || 'Generation failed');
+                if (!data.success) throw new Error(data.error || "Failed");
 
                 const newItem = {
-                    url: data.image,
+                    url: data.image || data.video || data.response || data.url,
                     prompt: prompt,
                     timestamp: Date.now(),
                     favorite: false,
-                    provider: data.provider
+                    type: type
                 };
 
                 gallery.unshift(newItem);
                 saveGallery();
                 renderGallery();
                 renderStats();
-
-                showToast("✨ Image generated successfully!");
-                promptEl.value = '';
-
+                showToast("✅ Generated successfully!");
+                document.getElementById('prompt').value = '';
             } catch (err) {
-                console.error(err);
-                showToast("Generation failed. Please try again.", true);
+                showToast("Generation failed. Try again.", true);
             } finally {
                 const loader = document.getElementById(loadingId);
                 if (loader) loader.remove();
@@ -415,43 +362,33 @@
         }
 
         function openModal(index) {
-            currentImageIndex = index;
-            const item = gallery[index];
-            if (!item) return;
-
-            document.getElementById('modal-image').innerHTML = `<img src="${item.url}" class="max-h-[65vh] w-full object-contain">`;
-            document.getElementById('modal-prompt-text').textContent = item.prompt;
+            currentItem = gallery[index];
+            const content = document.getElementById('modal-content');
+            if (currentItem.type === 'chat') {
+                content.innerHTML = `<div class="p-8 text-lg leading-relaxed">${currentItem.url}</div>`;
+            } else if (currentItem.type === 'video') {
+                content.innerHTML = `<video src="${currentItem.url}" controls class="w-full rounded-2xl"></video>`;
+            } else {
+                content.innerHTML = `<img src="${currentItem.url}" class="w-full rounded-2xl">`;
+            }
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal').classList.add('flex');
         }
 
         function closeModal() {
-            const modal = document.getElementById('modal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+            document.getElementById('modal').classList.add('hidden');
         }
 
         function downloadCurrent() {
-            if (currentImageIndex === null) return;
-            const item = gallery[currentImageIndex];
-            downloadImage(item.url, item.prompt);
-        }
-
-        function copyCurrentUrl() {
-            if (currentImageIndex === null) return;
-            copyImageUrl(gallery[currentImageIndex].url);
-        }
-
-        function downloadImage(url, prompt) {
+            if (!currentItem) return;
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `fluxora-${prompt.slice(0, 40).replace(/[^a-z0-9]/gi, '-')}.jpg`;
+            a.href = currentItem.url;
+            a.download = `fluxora-${Date.now()}.jpg`;
             a.click();
-            showToast("Download started");
         }
 
-        function copyImageUrl(url) {
-            navigator.clipboard.writeText(url).then(() => showToast("URL copied to clipboard"));
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url);
+            showToast("URL copied to clipboard");
         }
 
         function toggleFavorite(index) {
@@ -461,17 +398,8 @@
             renderStats();
         }
 
-        function deleteImage(index) {
-            if (confirm("Delete this image permanently?")) {
-                gallery.splice(index, 1);
-                saveGallery();
-                renderGallery();
-                renderStats();
-            }
-        }
-
         function clearGallery() {
-            if (confirm("Clear all images from gallery?")) {
+            if (confirm("Clear entire gallery?")) {
                 gallery = [];
                 saveGallery();
                 renderGallery();
@@ -479,87 +407,63 @@
             }
         }
 
-        function showToast(msg, error = false) {
+        function showToast(text, error = false) {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-message').innerHTML = msg;
+            document.getElementById('toast-text').textContent = text;
             toast.style.borderColor = error ? '#ef4444' : '#facc15';
-            toast.style.color = error ? '#f87171' : '#facc15';
             toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
+            setTimeout(() => toast.classList.add('hidden'), 2800);
         }
 
-        function useExample(btn) {
-            document.getElementById('prompt').value = btn.textContent;
-            generateImage();
+        function switchMode(n) {
+            currentMode = n;
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === n));
+            document.getElementById('generate-btn-text').textContent = modes[n].btn;
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('#create-section, #gallery-section, #api-section, #credits-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(section + '-section').classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.toggle('active', link.getAttribute('onclick').includes(section)));
         }
 
         function toggleTheme() {
-            isDark = !isDark;
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-                document.getElementById('theme-icon').classList.replace('fa-sun', 'fa-moon');
-            } else {
-                document.documentElement.classList.remove('dark');
-                document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
-            }
-            renderGallery();
+            document.documentElement.classList.toggle('light');
+            const icon = document.getElementById('theme-icon');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
         }
 
-        function showSection(sec) {
-            document.querySelectorAll('#generator-section, #gallery-section, #api-section').forEach(el => el.classList.add('hidden'));
-            document.getElementById(sec + '-section').classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.toggle('active', link.getAttribute('onclick').includes(sec));
-            });
-        }
-
-        function setupSearch() {
-            const input = document.getElementById('search-input');
-            input.addEventListener('input', () => {
-                const term = input.value.toLowerCase();
-                if (!term) {
-                    renderGallery();
-                    return;
-                }
-                const filtered = gallery.filter(item => item.prompt.toLowerCase().includes(term));
-                renderGallery(filtered);
-            });
+        function copyCode(btn) {
+            const code = btn.getAttribute('data-code').replace(/&#10;/g, '\n');
+            navigator.clipboard.writeText(code);
+            const original = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+            setTimeout(() => btn.innerHTML = original, 2000);
         }
 
         function init() {
             renderStats();
             renderGallery();
-            setupSearch();
-            showSection('generator');
+            showSection('create');
+            switchMode(0);
 
-            // Seed some Unsplash-style demo images if empty
             if (gallery.length === 0) {
-                gallery = [
-                    {
-                        url: "https://picsum.photos/id/1015/1024/1024",
-                        prompt: "Futuristic dragon soaring over Lagos at sunset",
-                        timestamp: Date.now() - 3600000,
-                        favorite: true
-                    },
-                    {
-                        url: "https://picsum.photos/id/201/1024/1024",
-                        prompt: "Neon cyberpunk street with flying cars",
-                        timestamp: Date.now() - 7200000,
-                        favorite: false
-                    }
-                ];
+                gallery = [{
+                    url: "https://picsum.photos/id/1015/1024/1024",
+                    prompt: "Futuristic dragon soaring over Lagos skyline",
+                    timestamp: Date.now() - 3600000,
+                    favorite: true,
+                    type: "image"
+                }];
                 saveGallery();
                 renderGallery();
-                renderStats();
             }
 
-            // Enter key support
-            document.getElementById('prompt').addEventListener('keypress', e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    generateImage();
-                }
+            document.getElementById('search').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const filtered = gallery.filter(item => item.prompt.toLowerCase().includes(term));
+                renderGallery(filtered);
             });
         }
 
