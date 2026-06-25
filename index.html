@@ -1,1 +1,569 @@
-<!DOCTYPE html><html><head><meta charset='utf-8'><title>Placeholder</title></head><body><h1>Image Generation API UI</h1><p>This is a starter file. The full requested UI is too large to generate in one response artifact here.</p></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluxora • AI Image Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+        
+        :root {
+            --primary: 234 179 8;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .logo-font {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+        }
+
+        .light .glass {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgb(0 0 0 / 0.1);
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-12px) scale(1.02);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e);
+        }
+        
+        .light .gradient-bg {
+            background: linear-gradient(135deg, #f8fafc, #e0f2fe, #dbeafe);
+        }
+
+        .blob {
+            animation: blob 30s infinite ease-in-out;
+        }
+
+        @keyframes blob {
+            0%, 100% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(120px, 80px) scale(1.15); }
+            66% { transform: translate(-80px, 140px) scale(0.85); }
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .image-container img {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .image-container:hover img {
+            transform: scale(1.1);
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        .light .skeleton {
+            background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .modal-content {
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="gradient-bg text-white min-h-screen pb-20 dark">
+    <!-- Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-10 left-10 w-[500px] h-[500px] bg-yellow-400/10 rounded-full blur-3xl blob"></div>
+        <div class="absolute bottom-20 right-20 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl blob" style="animation-delay: -12s"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between py-8 gap-6">
+            <div class="flex items-center gap-x-3">
+                <div class="w-11 h-11 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center text-3xl font-bold logo-font shadow-inner">F</div>
+                <div>
+                    <span class="text-4xl font-bold tracking-tighter logo-font">Fluxora</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-x-8 text-sm font-medium">
+                <a href="#" onclick="showSection('generator')" class="nav-link active hover:text-yellow-400 transition-colors">Create</a>
+                <a href="#" onclick="showSection('gallery')" class="nav-link hover:text-yellow-400 transition-colors">Gallery</a>
+                <a href="#" onclick="showSection('api')" class="nav-link hover:text-yellow-400 transition-colors">API</a>
+            </div>
+
+            <div class="flex items-center gap-x-4">
+                <!-- Theme Toggle -->
+                <button onclick="toggleTheme()" id="theme-toggle"
+                    class="w-11 h-11 flex items-center justify-center rounded-2xl hover:bg-white/10 dark:hover:bg-white/10 transition-all">
+                    <i class="fa-solid fa-sun text-xl" id="theme-icon"></i>
+                </button>
+                
+                <button onclick="clearGallery()" 
+                    class="px-5 py-2.5 text-sm font-medium bg-white/10 hover:bg-white/20 rounded-2xl transition-colors flex items-center gap-x-2">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span class="hidden sm:inline">Clear</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4 mb-12" id="stats"></div>
+
+        <!-- Generator -->
+        <div id="generator-section">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-10">
+                    <h1 class="text-5xl sm:text-6xl font-bold tracking-tighter logo-font mb-4">Instant AI Magic</h1>
+                    <p class="text-xl text-gray-400 dark:text-gray-400">Powered by Pollinations &amp; FLUX • Beautiful images in seconds</p>
+                </div>
+
+                <div class="glass border border-white/10 dark:border-white/10 rounded-3xl p-2 shadow-2xl">
+                    <textarea id="prompt" rows="4"
+                        class="w-full bg-transparent px-8 py-6 text-lg resize-none outline-none placeholder:text-gray-400 rounded-3xl"
+                        placeholder="A majestic cybernetic lion standing on a floating island at golden hour..."></textarea>
+                    
+                    <div class="flex flex-wrap items-center gap-4 border-t border-white/10 dark:border-white/10 pt-6 px-8 pb-2">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">MODEL</label>
+                            <select id="provider" class="bg-zinc-900 dark:bg-white border border-white/20 dark:border-zinc-300 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-yellow-400">
+                                <option value="pollinations">Pollinations (Fast)</option>
+                                <option value="flux">FLUX Schnell</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex-1 min-w-0">
+                            <label class="block text-xs text-gray-400 mb-1">DIMENSIONS</label>
+                            <div class="flex gap-3">
+                                <input type="number" id="width" value="1024" class="w-full bg-zinc-900 dark:bg-white border border-white/20 dark:border-zinc-300 rounded-2xl px-5 py-3 text-center focus:outline-none focus:border-yellow-400">
+                                <span class="self-center text-gray-400">×</span>
+                                <input type="number" id="height" value="1024" class="w-full bg-zinc-900 dark:bg-white border border-white/20 dark:border-zinc-300 rounded-2xl px-5 py-3 text-center focus:outline-none focus:border-yellow-400">
+                            </div>
+                        </div>
+                        
+                        <button onclick="generateImage()" 
+                            class="mt-6 sm:mt-0 px-12 py-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:brightness-110 active:scale-95 transition-all text-black font-semibold rounded-2xl flex items-center gap-x-3 shadow-xl shadow-yellow-500/40 text-lg">
+                            <i class="fa-solid fa-sparkles"></i>
+                            <span>GENERATE</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Prompts -->
+                <div class="flex flex-wrap gap-3 justify-center mt-10">
+                    <button onclick="useExample(this)" class="text-xs sm:text-sm px-6 py-3 bg-white/5 hover:bg-white/10 dark:hover:bg-black/10 rounded-3xl transition-colors border border-white/10">futuristic Lagos skyline at dusk</button>
+                    <button onclick="useExample(this)" class="text-xs sm:text-sm px-6 py-3 bg-white/5 hover:bg-white/10 dark:hover:bg-black/10 rounded-3xl transition-colors border border-white/10">ethereal crystal dragon in mist</button>
+                    <button onclick="useExample(this)" class="text-xs sm:text-sm px-6 py-3 bg-white/5 hover:bg-white/10 dark:hover:bg-black/10 rounded-3xl transition-colors border border-white/10">neon samurai cat in cyberpunk alley</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery -->
+        <div id="gallery-section" class="hidden">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+                <div>
+                    <h2 class="text-4xl font-semibold tracking-tight">Your Gallery</h2>
+                    <p class="text-gray-400" id="gallery-count">0 images</p>
+                </div>
+                
+                <div class="relative w-full sm:w-80">
+                    <input id="search-input" type="text" 
+                        class="w-full bg-white/5 dark:bg-white/10 border border-white/10 dark:border-white/20 rounded-3xl py-4 pl-12 pr-6 outline-none focus:border-yellow-400 placeholder:text-gray-400"
+                        placeholder="Search your creations...">
+                    <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+
+            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- JS populated -->
+            </div>
+        </div>
+
+        <!-- API Docs -->
+        <div id="api-section" class="hidden">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-5xl font-bold tracking-tighter mb-8">API Documentation</h2>
+                
+                <div class="glass rounded-3xl p-8 mb-10">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="px-5 py-1.5 bg-emerald-500 text-black font-mono text-sm rounded-2xl">POST</span>
+                        <code class="text-lg font-medium">https://gen-sand-chi.vercel.app/api/generate</code>
+                    </div>
+                    
+                    <pre class="bg-black/70 dark:bg-zinc-900 p-6 rounded-2xl text-sm overflow-x-auto font-mono"><code>{
+  "prompt": "A beautiful sunset over the ocean",
+  "provider": "flux"
+}</code></pre>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold mb-4 text-lg">Supported Providers</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-center gap-3"><span class="text-emerald-400">●</span> pollinations (fast &amp; free)</li>
+                            <li class="flex items-center gap-3"><span class="text-emerald-400">●</span> flux (high quality)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-4 text-lg">Response</h3>
+                        <pre class="bg-black/70 dark:bg-zinc-900 p-5 rounded-2xl text-xs">{
+  "success": true,
+  "image": "https://...",
+  "prompt": "...",
+  "provider": "flux"
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action -->
+    <button onclick="showSection('generator')" 
+        class="fixed bottom-8 right-8 bg-gradient-to-br from-yellow-400 to-amber-500 text-black w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-2xl md:hidden z-50">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+
+    <!-- Image Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+        <div class="modal-content max-w-4xl w-full bg-zinc-900 dark:bg-white dark:text-black rounded-3xl overflow-hidden">
+            <div id="modal-image" class="aspect-video bg-black flex items-center justify-center"></div>
+            
+            <div class="p-8">
+                <p id="modal-prompt-text" class="text-lg leading-relaxed mb-8"></p>
+                
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="downloadCurrent()" 
+                        class="flex-1 sm:flex-none px-8 py-4 bg-yellow-400 text-black rounded-2xl font-semibold flex items-center justify-center gap-3 hover:brightness-110">
+                        <i class="fa-solid fa-download"></i> Download
+                    </button>
+                    <button onclick="copyCurrentUrl()" 
+                        class="flex-1 sm:flex-none px-8 py-4 border border-white/30 dark:border-black/30 rounded-2xl font-medium flex items-center justify-center gap-3 hover:bg-white/10">
+                        <i class="fa-solid fa-copy"></i> Copy URL
+                    </button>
+                    <button onclick="closeModal()" 
+                        class="flex-1 sm:flex-none px-8 py-4 border border-white/30 dark:border-black/30 rounded-2xl font-medium">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-800 dark:bg-white dark:text-black border border-yellow-400 text-yellow-400 px-8 py-4 rounded-3xl shadow-2xl flex items-center gap-3 z-50">
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        let gallery = JSON.parse(localStorage.getItem('fluxora_gallery') || '[]');
+        let isDark = true;
+        let currentImageIndex = null;
+
+        function saveGallery() {
+            localStorage.setItem('fluxora_gallery', JSON.stringify(gallery));
+        }
+
+        function renderStats() {
+            const total = gallery.length;
+            const favs = gallery.filter(i => i.favorite).length;
+            document.getElementById('stats').innerHTML = `
+                <div class="glass border border-white/10 dark:border-black/10 rounded-3xl p-6 text-center">
+                    <div class="text-5xl font-bold">${total}</div>
+                    <div class="text-sm mt-1 text-gray-400">Creations</div>
+                </div>
+                <div class="glass border border-white/10 dark:border-black/10 rounded-3xl p-6 text-center">
+                    <div class="text-5xl font-bold">2</div>
+                    <div class="text-sm mt-1 text-gray-400">Models</div>
+                </div>
+                <div class="glass border border-white/10 dark:border-black/10 rounded-3xl p-6 text-center">
+                    <div class="text-5xl font-bold">${favs}</div>
+                    <div class="text-sm mt-1 text-gray-400">Favorites</div>
+                </div>
+            `;
+        }
+
+        function timeAgo(ts) {
+            const diff = Math.floor((Date.now() - ts) / 1000);
+            if (diff < 60) return 'just now';
+            if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+            return Math.floor(diff/3600) + 'h ago';
+        }
+
+        function renderGallery(filtered = null) {
+            const container = document.getElementById('gallery-grid');
+            const items = filtered || gallery;
+            
+            document.getElementById('gallery-count').textContent = `${items.length} images`;
+
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-20 text-center">
+                        <i class="fa-solid fa-image text-7xl opacity-20 mb-6"></i>
+                        <p class="text-xl text-gray-400">No images yet.<br>Generate something amazing!</p>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            items.forEach((item, idx) => {
+                const globalIndex = gallery.indexOf(item);
+                html += `
+                <div class="group bg-zinc-900/80 dark:bg-white/80 border border-white/10 dark:border-black/10 rounded-3xl overflow-hidden card-hover">
+                    <div onclick="openModal(${globalIndex})" class="image-container aspect-[4/3] cursor-pointer">
+                        <img src="\( {item.url}" class="w-full h-full object-cover" alt=" \){item.prompt}">
+                    </div>
+                    <div class="p-5">
+                        <p class="line-clamp-2 text-sm mb-4 text-gray-300 dark:text-gray-700">${item.prompt}</p>
+                        <div class="flex justify-between text-xs items-center">
+                            <span class="text-gray-500">${timeAgo(item.timestamp)}</span>
+                            <div class="flex gap-5 text-xl">
+                                <button onclick="toggleFavorite(\( {globalIndex}); event.stopImmediatePropagation()" class=" \){item.favorite ? 'text-red-500' : 'text-gray-400'} hover:scale-110 transition">
+                                    ${item.favorite ? '♥' : '♡'}
+                                </button>
+                                <button onclick="copyImageUrl('${item.url}'); event.stopImmediatePropagation()" class="hover:text-yellow-400 transition">📋</button>
+                                <button onclick="downloadImage('\( {item.url}', ' \){item.prompt}'); event.stopImmediatePropagation()" class="hover:text-yellow-400 transition">↓</button>
+                                <button onclick="deleteImage(${globalIndex}); event.stopImmediatePropagation()" class="hover:text-red-400 transition">🗑</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function generateImage() {
+            const promptEl = document.getElementById('prompt');
+            const prompt = promptEl.value.trim();
+            if (!prompt) return showToast("Enter a prompt first", true);
+
+            showSection('gallery');
+
+            const loadingId = 'load-' + Date.now();
+            document.getElementById('gallery-grid').insertAdjacentHTML('afterbegin', `
+                <div id="${loadingId}" class="bg-zinc-900/70 dark:bg-white/70 rounded-3xl overflow-hidden">
+                    <div class="aspect-[4/3] skeleton"></div>
+                    <div class="p-5 space-y-3">
+                        <div class="h-4 bg-zinc-700 dark:bg-zinc-200 rounded w-4/5"></div>
+                        <div class="h-3 bg-zinc-700 dark:bg-zinc-200 rounded w-1/2"></div>
+                    </div>
+                </div>
+            `);
+
+            try {
+                const provider = document.getElementById('provider').value;
+                const width = parseInt(document.getElementById('width').value) || 1024;
+                const height = parseInt(document.getElementById('height').value) || 1024;
+
+                const res = await fetch('https://gen-sand-chi.vercel.app/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, provider })
+                });
+
+                const data = await res.json();
+
+                if (!data.success || !data.image) throw new Error(data.error || 'Generation failed');
+
+                const newItem = {
+                    url: data.image,
+                    prompt: prompt,
+                    timestamp: Date.now(),
+                    favorite: false,
+                    provider: data.provider
+                };
+
+                gallery.unshift(newItem);
+                saveGallery();
+                renderGallery();
+                renderStats();
+
+                showToast("✨ Image generated successfully!");
+                promptEl.value = '';
+
+            } catch (err) {
+                console.error(err);
+                showToast("Generation failed. Please try again.", true);
+            } finally {
+                const loader = document.getElementById(loadingId);
+                if (loader) loader.remove();
+            }
+        }
+
+        function openModal(index) {
+            currentImageIndex = index;
+            const item = gallery[index];
+            if (!item) return;
+
+            document.getElementById('modal-image').innerHTML = `<img src="${item.url}" class="max-h-[65vh] w-full object-contain">`;
+            document.getElementById('modal-prompt-text').textContent = item.prompt;
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function downloadCurrent() {
+            if (currentImageIndex === null) return;
+            const item = gallery[currentImageIndex];
+            downloadImage(item.url, item.prompt);
+        }
+
+        function copyCurrentUrl() {
+            if (currentImageIndex === null) return;
+            copyImageUrl(gallery[currentImageIndex].url);
+        }
+
+        function downloadImage(url, prompt) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fluxora-${prompt.slice(0, 40).replace(/[^a-z0-9]/gi, '-')}.jpg`;
+            a.click();
+            showToast("Download started");
+        }
+
+        function copyImageUrl(url) {
+            navigator.clipboard.writeText(url).then(() => showToast("URL copied to clipboard"));
+        }
+
+        function toggleFavorite(index) {
+            gallery[index].favorite = !gallery[index].favorite;
+            saveGallery();
+            renderGallery();
+            renderStats();
+        }
+
+        function deleteImage(index) {
+            if (confirm("Delete this image permanently?")) {
+                gallery.splice(index, 1);
+                saveGallery();
+                renderGallery();
+                renderStats();
+            }
+        }
+
+        function clearGallery() {
+            if (confirm("Clear all images from gallery?")) {
+                gallery = [];
+                saveGallery();
+                renderGallery();
+                renderStats();
+            }
+        }
+
+        function showToast(msg, error = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerHTML = msg;
+            toast.style.borderColor = error ? '#ef4444' : '#facc15';
+            toast.style.color = error ? '#f87171' : '#facc15';
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function useExample(btn) {
+            document.getElementById('prompt').value = btn.textContent;
+            generateImage();
+        }
+
+        function toggleTheme() {
+            isDark = !isDark;
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('theme-icon').classList.replace('fa-sun', 'fa-moon');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+            }
+            renderGallery();
+        }
+
+        function showSection(sec) {
+            document.querySelectorAll('#generator-section, #gallery-section, #api-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(sec + '-section').classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.toggle('active', link.getAttribute('onclick').includes(sec));
+            });
+        }
+
+        function setupSearch() {
+            const input = document.getElementById('search-input');
+            input.addEventListener('input', () => {
+                const term = input.value.toLowerCase();
+                if (!term) {
+                    renderGallery();
+                    return;
+                }
+                const filtered = gallery.filter(item => item.prompt.toLowerCase().includes(term));
+                renderGallery(filtered);
+            });
+        }
+
+        function init() {
+            renderStats();
+            renderGallery();
+            setupSearch();
+            showSection('generator');
+
+            // Seed some Unsplash-style demo images if empty
+            if (gallery.length === 0) {
+                gallery = [
+                    {
+                        url: "https://picsum.photos/id/1015/1024/1024",
+                        prompt: "Futuristic dragon soaring over Lagos at sunset",
+                        timestamp: Date.now() - 3600000,
+                        favorite: true
+                    },
+                    {
+                        url: "https://picsum.photos/id/201/1024/1024",
+                        prompt: "Neon cyberpunk street with flying cars",
+                        timestamp: Date.now() - 7200000,
+                        favorite: false
+                    }
+                ];
+                saveGallery();
+                renderGallery();
+                renderStats();
+            }
+
+            // Enter key support
+            document.getElementById('prompt').addEventListener('keypress', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateImage();
+                }
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
