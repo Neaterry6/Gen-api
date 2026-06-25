@@ -1,18 +1,18 @@
 export default async function handler(req, res) {
-    if (req.method!== "POST") {
+    if (req.method !== "POST") {
         return res.status(405).json({ success: false, error: "Method not allowed" });
     }
 
     try {
-        const {
-            prompt,
-            provider = "pollinations",
-            type = "image",
-            width = 1024,
-            height = 1024,
+        const { 
+            prompt, 
+            provider = "pollinations", 
+            type = "image",           // image | video | chat | edit
+            width = 1024, 
+            height = 1024, 
             seed,
-            image,
-            duration = 5,
+            image,                    // For edit / image-to-video
+            duration = 5,             // seconds for video
             modelOverride
         } = req.body;
 
@@ -20,8 +20,11 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, error: "Prompt is required" });
         }
 
-        const randomSeed = seed || Math.floor(Math.random() * 999);
+        const randomSeed = seed || Math.floor(Math.random() * 999999999);
 
+        // ========================
+        // UPLOAD HELPER
+        // ========================
         async function uploadImageOrVideo(url) {
             try {
                 const uploadRes = await fetch("https://apis.malvryx.dev/api/uploader/malvryx-temp", {
@@ -43,14 +46,19 @@ export default async function handler(req, res) {
             }
         }
 
+        // ========================
+        // POLLINATIONS UNIFIED (Best for most use cases)
+        // ========================
         if (provider.toLowerCase().includes("pollinations") || provider === "gen") {
             let model = modelOverride || "flux";
             let endpoint = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
 
             if (type === "video") {
-                endpoint = `https://video.pollinations.ai/prompt/${encodeURIComponent(prompt)}?duration=${duration}&seed=${randomSeed}`;
-                model = "seedance" || "kling";
+                endpoint = `https://video.pollinations.ai/prompt/\( {encodeURIComponent(prompt)}?duration= \){duration}&seed=${randomSeed}`;
+                model = "seedance" || "kling"; // Pollinations video models
             } else if (type === "chat") {
+                endpoint = `https://gen.pollinations.ai/chat`;
+                // For chat, we use a different flow
                 const chatRes = await fetch("https://gen.pollinations.ai/chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -76,13 +84,16 @@ export default async function handler(req, res) {
                     provider: "pollinations",
                     type,
                     prompt,
-                    image: type === "image" || type === "edit"? finalUrl : null,
-                    video: type === "video"? finalUrl : null,
+                    image: type === "image" || type === "edit" ? finalUrl : null,
+                    video: type === "video" ? finalUrl : null,
                     model
                 });
             }
         }
 
+        // ========================
+        // FLUX SCHNELL (HF)
+        // ========================
         if (provider.toLowerCase().includes("flux")) {
             const response = await fetch("https://router.huggingface.co/fal-ai/fal-ai/flux/schnell", {
                 method: "POST",
@@ -108,6 +119,9 @@ export default async function handler(req, res) {
             });
         }
 
+        // ========================
+        // MORE IMAGE MODELS via Pollinations
+        // ========================
         const imageModels = {
             "sd3.5": "sd3.5-medium",
             "nano-banana": "nano-banana-2",
@@ -118,7 +132,7 @@ export default async function handler(req, res) {
 
         if (imageModels[provider.toLowerCase()]) {
             const modelParam = imageModels[provider.toLowerCase()];
-            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${modelParam}&seed=${randomSeed}&width=${width}&height=${height}&nologo=true`;
+            const url = `https://image.pollinations.ai/prompt/\( {encodeURIComponent(prompt)}?model= \){modelParam}&seed=\( {randomSeed}&width= \){width}&height=${height}&nologo=true`;
             const finalUrl = await uploadImageOrVideo(url);
             return res.status(200).json({
                 success: true,
@@ -129,8 +143,11 @@ export default async function handler(req, res) {
             });
         }
 
+        // ========================
+        // VIDEO via Pollinations / alternatives
+        // ========================
         if (type === "video" && provider.toLowerCase().includes("video")) {
-            const videoUrl = `https://video.pollinations.ai/prompt/${encodeURIComponent(prompt)}?duration=${Math.min(duration, 10)}`;
+            const videoUrl = `https://video.pollinations.ai/prompt/\( {encodeURIComponent(prompt)}?duration= \){Math.min(duration, 10)}`;
             const finalVideo = await uploadImageOrVideo(videoUrl);
             return res.status(200).json({
                 success: true,
@@ -141,14 +158,18 @@ export default async function handler(req, res) {
             });
         }
 
+        // ========================
+        // CHAT (Pollinations / fallback)
+        // ========================
         if (type === "chat") {
+            // Try Pollinations gen endpoint
             try {
                 const chatRes = await fetch("https://gen.pollinations.ai/chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         messages: [{ role: "user", content: prompt }],
-                        model: "deepseek"
+                        model: "deepseek" // or claude, gemini etc.
                     })
                 });
                 const data = await chatRes.json();
@@ -159,6 +180,7 @@ export default async function handler(req, res) {
                     response: data.response || data.text || JSON.stringify(data)
                 });
             } catch (e) {
+                // Simple fallback
                 return res.status(200).json({
                     success: true,
                     provider: "fallback",
