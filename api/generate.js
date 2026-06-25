@@ -1,137 +1,180 @@
 export default async function handler(req, res) {
-    if (req.method !== "POST") {
+    if (req.method!== "POST") {
         return res.status(405).json({ success: false, error: "Method not allowed" });
     }
 
     try {
-        const { prompt, provider = "pollinations", width = 1024, height = 1024, seed } = req.body;
+        const {
+            prompt,
+            provider = "pollinations",
+            type = "image",
+            width = 1024,
+            height = 1024,
+            seed,
+            image,
+            duration = 5,
+            modelOverride
+        } = req.body;
 
         if (!prompt) {
             return res.status(400).json({ success: false, error: "Prompt is required" });
         }
 
-        const randomSeed = seed || Math.floor(Math.random() * 999999999);
+        const randomSeed = seed || Math.floor(Math.random() * 999);
 
-        // ===========================
-        // POLLINATIONS (Fast & Reliable)
-        // ===========================
-        if (provider.toLowerCase() === "pollinations") {
-            const imageUrl = `https://image.pollinations.ai/prompt/\( {encodeURIComponent(prompt)}?seed= \){randomSeed}&nologo=true&width=\( {width}&height= \){height}`;
-
-            const uploaded = await uploadImage(imageUrl);
-            return res.status(200).json({
-                success: true,
-                provider: "pollinations",
-                prompt,
-                image: uploaded.url || imageUrl,
-                upload: uploaded
-            });
+        async function uploadImageOrVideo(url) {
+            try {
+                const uploadRes = await fetch("https://apis.malvryx.dev/api/uploader/malvryx-temp", {
+                    method: "POST",
+                    headers: {
+                        "X-API-Key": process.env.MALVRYX_API_KEY,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        type: "temp",
+                        expiry: "7d"
+                    })
+                });
+                const data = await uploadRes.json();
+                return data.url || data.link || url;
+            } catch (e) {
+                return url;
+            }
         }
 
-        // ===========================
-        // FLUX SCHNELL (High Quality)
-        // ===========================
-        if (provider.toLowerCase() === "flux" || provider.toLowerCase() === "flux-schnell") {
+        if (provider.toLowerCase().includes("pollinations") || provider === "gen") {
+            let model = modelOverride || "flux";
+            let endpoint = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+
+            if (type === "video") {
+                endpoint = `https://video.pollinations.ai/prompt/${encodeURIComponent(prompt)}?duration=${duration}&seed=${randomSeed}`;
+                model = "seedance" || "kling";
+            } else if (type === "chat") {
+                const chatRes = await fetch("https://gen.pollinations.ai/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ messages: [{ role: "user", content: prompt }] })
+                });
+                const chatData = await chatRes.json();
+                return res.status(200).json({
+                    success: true,
+                    provider: "pollinations-chat",
+                    type: "chat",
+                    response: chatData.response || chatData.text || chatData.content,
+                    model: "claude/gemini/deepseek"
+                });
+            }
+
+            if (type === "image" || type === "video" || type === "edit") {
+                if (type === "edit" && image) {
+                    endpoint += `&image=${encodeURIComponent(image)}`;
+                }
+                const finalUrl = await uploadImageOrVideo(endpoint);
+                return res.status(200).json({
+                    success: true,
+                    provider: "pollinations",
+                    type,
+                    prompt,
+                    image: type === "image" || type === "edit"? finalUrl : null,
+                    video: type === "video"? finalUrl : null,
+                    model
+                });
+            }
+        }
+
+        if (provider.toLowerCase().includes("flux")) {
             const response = await fetch("https://router.huggingface.co/fal-ai/fal-ai/flux/schnell", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${process.env.HF_TOKEN}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    prompt,
-                    width: Number(width),
-                    height: Number(height),
-                    seed: randomSeed,
-                    num_images: 1
-                })
+                body: JSON.stringify({ prompt, width, height, seed: randomSeed })
             });
 
             const data = await response.json();
-            if (!response.ok) {
-                return res.status(response.status).json({ success: false, provider: "flux", error: data });
-            }
+            if (!response.ok) throw new Error("Flux failed");
 
-            let fluxImage = data.images?.[0]?.url || data.image || data.output?.[0]?.url || data.url;
-            if (!fluxImage) {
-                return res.status(500).json({ success: false, provider: "flux", error: "No image returned" });
-            }
+            const fluxUrl = data.images?.[0]?.url || data.image;
+            const finalUrl = await uploadImageOrVideo(fluxUrl);
 
-            const uploaded = await uploadImage(fluxImage);
             return res.status(200).json({
                 success: true,
-                provider: "flux",
+                provider: "flux-schnell",
+                type: "image",
                 prompt,
-                image: uploaded.url || fluxImage,
-                upload: uploaded
+                image: finalUrl
             });
         }
 
-        // ===========================
-        // NEW: POLLINATIONS FLUX (Alternative endpoint)
-        // ===========================
-        if (provider.toLowerCase() === "pollinations-flux") {
-            const imageUrl = `https://image.pollinations.ai/prompt/\( {encodeURIComponent(prompt)}?model=flux&seed= \){randomSeed}&nologo=true&width=\( {width}&height= \){height}`;
+        const imageModels = {
+            "sd3.5": "sd3.5-medium",
+            "nano-banana": "nano-banana-2",
+            "seedream": "seedream-5.0",
+            "photon": "photon",
+            "ideogram": "ideogram-v2"
+        };
 
-            const uploaded = await uploadImage(imageUrl);
+        if (imageModels[provider.toLowerCase()]) {
+            const modelParam = imageModels[provider.toLowerCase()];
+            const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=${modelParam}&seed=${randomSeed}&width=${width}&height=${height}&nologo=true`;
+            const finalUrl = await uploadImageOrVideo(url);
             return res.status(200).json({
                 success: true,
-                provider: "pollinations-flux",
+                provider,
+                type: "image",
                 prompt,
-                image: uploaded.url || imageUrl,
-                upload: uploaded
+                image: finalUrl
             });
         }
 
-        // ===========================
-        // NEW: Stable Diffusion 3.5 (via Pollinations / other free routes)
-        // ===========================
-        if (provider.toLowerCase() === "sd3.5" || provider.toLowerCase() === "stable-diffusion") {
-            const imageUrl = `https://image.pollinations.ai/prompt/\( {encodeURIComponent(prompt)}?model=sd3.5-medium&seed= \){randomSeed}&nologo=true&width=\( {width}&height= \){height}`;
-
-            const uploaded = await uploadImage(imageUrl);
+        if (type === "video" && provider.toLowerCase().includes("video")) {
+            const videoUrl = `https://video.pollinations.ai/prompt/${encodeURIComponent(prompt)}?duration=${Math.min(duration, 10)}`;
+            const finalVideo = await uploadImageOrVideo(videoUrl);
             return res.status(200).json({
                 success: true,
-                provider: "sd3.5",
+                provider: "pollinations-video",
+                type: "video",
                 prompt,
-                image: uploaded.url || imageUrl,
-                upload: uploaded
+                video: finalVideo
             });
+        }
+
+        if (type === "chat") {
+            try {
+                const chatRes = await fetch("https://gen.pollinations.ai/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        messages: [{ role: "user", content: prompt }],
+                        model: "deepseek"
+                    })
+                });
+                const data = await chatRes.json();
+                return res.status(200).json({
+                    success: true,
+                    provider: "pollinations-chat",
+                    type: "chat",
+                    response: data.response || data.text || JSON.stringify(data)
+                });
+            } catch (e) {
+                return res.status(200).json({
+                    success: true,
+                    provider: "fallback",
+                    type: "chat",
+                    response: `Echo: ${prompt}\n\n(Advanced chat models available via Pollinations)`
+                });
+            }
         }
 
         return res.status(400).json({
             success: false,
-            error: "Unsupported provider. Use: pollinations, pollinations-flux, flux, sd3.5"
+            error: "Unsupported provider/type. Try: pollinations, flux, sd3.5, nano-banana, seedream, video, chat, edit"
         });
 
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, error: err.message });
-    }
-}
-
-// Helper to upload image to your temporary storage
-async function uploadImage(imageUrl) {
-    try {
-        const uploadRes = await fetch("https://apis.malvryx.dev/api/uploader/malvryx-temp", {
-            method: "POST",
-            headers: {
-                "X-API-Key": process.env.MALVRYX_API_KEY,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                url: imageUrl,
-                type: "temp",
-                expiry: "7d",
-                burnAfterRead: "",
-                password: ""
-            })
-        });
-
-        const uploaded = await uploadRes.json();
-        return uploaded;
-    } catch (e) {
-        // Fallback: return original URL if upload fails
-        return { url: imageUrl };
     }
 }
