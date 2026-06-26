@@ -2,106 +2,183 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fluxora • AI Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <meta name="theme-color" content="#0a0a0a">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
-        body { font-family: 'Inter', system-ui, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+        
+        :root { --bg-1: #0a0a0a; --bg-2: #1a1a2e; --bg-3: #16213e; }
+       .light { --bg-1: #f8fafc; --bg-2: #e0f2fe; --bg-3: #dbeafe; color: #0f172a; }
+        
+        body { font-family: 'Inter', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
        .logo-font { font-family: 'Space Grotesk', sans-serif; }
-       .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
-       .light.glass { background: rgba(255,255,255,0.75); }
-       .gradient-bg { background: linear-gradient(135deg, #0a0a0a, #1a1a2e, #16213e); }
-       .light.gradient-bg { background: linear-gradient(135deg, #f8fafc, #e0f2fe, #dbeafe); }
-       .card-hover { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-       .card-hover:hover { transform: translateY(-12px) scale(1.02); }
+       .glass { background: rgba(255,255,255,0.08); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+       .light.glass { background: rgba(255,255,255,0.75); border: 1px solid rgb(0 0 0 / 0.1); }
+       .gradient-bg { background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3)); min-height: 100dvh; }
+       .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+       .card-hover:active { transform: scale(0.98); }
+        @media (hover: hover) {.card-hover:hover { transform: translateY(-8px) scale(1.02); }
        .tab-btn.active { background: rgb(255 255 255 / 0.15); }
+       .light.tab-btn.active { background: rgb(0 0 0 / 0.1); }
        .nav-link.active { color: rgb(251 191 36); }
        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+       .blob { animation: blob 25s infinite ease-in-out; filter: blur(60px); }
+        @keyframes blob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(80px, 60px) scale(1.1); }
+            66% { transform: translate(-60px, 80px) scale(0.9); }
+        }
+        @media (max-width: 640px) {.blob { display: none; } /* Kill blobs on mobile for perf */
     </style>
 </head>
-<body class="gradient-bg text-white min-h-screen pb-24">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
-        <header class="flex justify-between items-center py-8">
+<body class="gradient-bg text-white light:text-slate-900">
+    <!-- Background Blobs Desktop Only -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-20 left-10 sm:left-20 w-72 sm:w-96 h-72 sm:h-96 bg-yellow-400/10 rounded-full blob"></div>
+        <div class="absolute bottom-40 right-10 sm:right-32 w-64 sm:w-80 h-64 sm:h-80 bg-purple-500/10 rounded-full blob" style="animation-delay: -12s"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <!-- Header: Stack on mobile -->
+        <header class="flex flex-col sm:flex-row justify-between items-center py-6 sm:py-8 gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-11 h-11 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-3xl flex items-center justify-center text-3xl font-bold logo-font">F</div>
-                <span class="text-4xl font-bold logo-font">Fluxora</span>
+                <div class="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl sm:rounded-3xl flex items-center justify-center text-2xl sm:text-3xl font-bold logo-font">F</div>
+                <span class="text-3xl sm:text-4xl font-bold tracking-tighter logo-font">Fluxora</span>
             </div>
-            <div class="flex gap-8 text-sm font-medium">
-                <a href="#" onclick="showSection('create')" class="nav-link active">Create</a>
-                <a href="#" onclick="showSection('gallery')" class="nav-link">Gallery</a>
-                <a href="#" onclick="showSection('api')" class="nav-link">API</a>
+
+            <nav class="flex gap-6 sm:gap-8 text-sm font-medium">
+                <a href="#" onclick="showSection('create')" class="nav-link active hover:text-yellow-400 transition">Create</a>
+                <a href="#" onclick="showSection('gallery')" class="nav-link hover:text-yellow-400 transition">Gallery</a>
+                <a href="#" onclick="showSection('api')" class="nav-link hover:text-yellow-400 transition">API</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <button onclick="toggleTheme()" class="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-2xl hover:bg-white/10 light:hover:bg-black/10 transition">
+                    <i class="fa-solid fa-moon text-lg sm:text-xl" id="theme-icon"></i>
+                </button>
+                <button onclick="clearGallery()" class="px-4 py-2 text-sm bg-white/10 light:bg-black/10 hover:bg-white/20 light:hover:bg-black/20 rounded-2xl flex items-center gap-2 transition">
+                    <i class="fa-solid fa-trash"></i><span class="hidden sm:inline">Clear</span>
+                </button>
             </div>
         </header>
 
-        <div id="stats" class="grid grid-cols-3 gap-4 mb-10"></div>
+        <!-- Stats: 1 col mobile, 3 col desktop -->
+        <div id="stats" class="grid grid-cols-3 gap-3 sm:gap-4 mb-8 sm:mb-10"></div>
 
+        <!-- CREATE SECTION -->
         <div id="create-section">
             <div class="max-w-3xl mx-auto">
-                <div class="text-center mb-10">
-                    <h1 class="text-5xl font-bold logo-font">AI Studio</h1>
-                    <p class="text-gray-400 mt-2">Free • Fast • API + Web</p>
+                <div class="text-center mb-8 sm:mb-10">
+                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter logo-font">AI Studio</h1>
+                    <p class="text-gray-400 light:text-slate-600 mt-2 text-sm sm:text-base">Free • Fast • API + Web</p>
                 </div>
-                <div class="flex bg-white/5 rounded-3xl p-1 mb-8 w-fit mx-auto">
-                    <button onclick="switchMode(0)" id="tab-0" class="tab-btn px-6 py-3 rounded-3xl font-medium active">Image</button>
-                    <button onclick="switchMode(1)" id="tab-1" class="tab-btn px-6 py-3 rounded-3xl font-medium">Video</button>
-                    <button onclick="switchMode(2)" id="tab-2" class="tab-btn px-6 py-3 rounded-3xl font-medium">Chat</button>
-                    <button onclick="switchMode(3)" id="tab-3" class="tab-btn px-6 py-3 rounded-3xl font-medium">Edit</button>
+
+                <!-- Mode Tabs: Scrollable on mobile -->
+                <div class="flex bg-white/5 light:bg-black/5 rounded-3xl p-1 mb-6 sm:mb-8 w-fit mx-auto overflow-x-auto">
+                    <button onclick="switchMode(0)" id="tab-0" class="tab-btn px-5 sm:px-6 py-2.5 sm:py-3 rounded-3xl font-medium text-sm sm:text-base whitespace-nowrap active">Image</button>
+                    <button onclick="switchMode(1)" id="tab-1" class="tab-btn px-5 sm:px-6 py-2.5 sm:py-3 rounded-3xl font-medium text-sm sm:text-base whitespace-nowrap">Video</button>
+                    <button onclick="switchMode(2)" id="tab-2" class="tab-btn px-5 sm:px-6 py-2.5 sm:py-3 rounded-3xl font-medium text-sm sm:text-base whitespace-nowrap">Chat</button>
+                    <button onclick="switchMode(3)" id="tab-3" class="tab-btn px-5 sm:px-6 py-2.5 sm:py-3 rounded-3xl font-medium text-sm sm:text-base whitespace-nowrap">Edit</button>
                 </div>
-                <div class="glass border-white/10 rounded-3xl p-8">
-                    <textarea id="prompt" rows="4" class="w-full bg-transparent text-lg outline-none placeholder:text-gray-400" placeholder="A majestic cybernetic lion..."></textarea>
-                    <input id="edit-image-url" type="url" placeholder="Image URL for edit mode" class="hidden w-full mt-4 bg-zinc-900 border-white/20 rounded-2xl px-5 py-3">
-                    <div class="mt-6 grid-cols-2 gap-6">
+
+                <div class="glass border-white/10 light:border-black/10 rounded-3xl p-6 sm:p-8">
+                    <textarea id="prompt" rows="3" class="w-full bg-transparent text-base sm:text-lg resize-none outline-none placeholder:text-gray-400 light:placeholder:text-slate-500" 
+                        placeholder="A majestic cybernetic lion standing on a floating island..."></textarea>
+
+                    <input id="edit-image-url" type="url" placeholder="Paste Image URL for Edit mode" class="hidden w-full mt-4 bg-zinc-900/50 light:bg-white/50 border-white/20 light:border-black/20 rounded-2xl px-4 sm:px-5 py-3 text-sm sm:text-base outline-none focus:border-yellow-400">
+
+                    <div class="mt-5 sm:mt-6 grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div>
-                            <label class="text-xs text-gray-400 block mb-2">MODEL</label>
-                            <select id="provider" class="w-full bg-zinc-900 border-white/20 rounded-2xl px-5 py-3">
+                            <label class="text-xs text-gray-400 light:text-slate-500 block mb-2">MODEL</label>
+                            <select id="provider" class="w-full bg-zinc-900/50 light:bg-white/50 border-white/20 light:border-black/20 rounded-2xl px-4 sm:px-5 py-3 text-sm sm:text-base focus:border-yellow-400 outline-none">
                                 <option value="pollinations">Pollinations Flux</option>
-                                <option value="flux">FLUX Schnell</option>
-                                <option value="sd3.5">SD 3.5</option>
-                                <option value="nano-banana">Nano Banana</option>
+                                <option value="flux">FLUX Schnell HF</option>
+                                <option value="sd3.5">Stable Diffusion 3.5</option>
+                                <option value="nano-banana">Nano Banana 2</option>
+                                <option value="seedream">Seedream 5.0</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="text-xs text-gray-400 block mb-2">DIMENSIONS</label>
-                            <div class="flex gap-3">
-                                <input type="number" id="width" value="1024" class="w-full bg-zinc-900 border-white/20 rounded-2xl px-5 py-3 text-center">
-                                <span class="self-center">×</span>
-                                <input type="number" id="height" value="1024" class="w-full bg-zinc-900 border-white/20 rounded-2xl px-5 py-3 text-center">
+
+                        <div id="extra-params">
+                            <label class="text-xs text-gray-400 light:text-slate-500 block mb-2">DIMENSIONS</label>
+                            <div class="flex gap-2 sm:gap-3">
+                                <input type="number" id="width" value="1024" min="512" max="2048" step="64" class="w-full bg-zinc-900/50 light:bg-white/50 border-white/20 light:border-black/20 rounded-2xl px-3 sm:px-5 py-3 text-center text-sm sm:text-base outline-none">
+                                <span class="self-center text-gray-400">×</span>
+                                <input type="number" id="height" value="1024" min="512" max="2048" step="64" class="w-full bg-zinc-900/50 light:bg-white/50 border-white/20 light:border-black/20 rounded-2xl px-3 sm:px-5 py-3 text-center text-sm sm:text-base outline-none">
                             </div>
                         </div>
                     </div>
-                    <button onclick="generate()" class="mt-8 w-full py-5 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-semibold rounded-3xl text-lg">
+
+                    <button onclick="generate()" class="mt-6 sm:mt-8 w-full py-4 sm:py-5 bg-gradient-to-r from-yellow-400 to-amber-500 text-black font-semibold rounded-3xl text-base sm:text-lg flex items-center justify-center gap-3 hover:brightness-110 active:scale-95 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
                         <span id="generate-btn-text">GENERATE IMAGE</span>
                     </button>
                 </div>
             </div>
         </div>
 
+        <!-- GALLERY SECTION -->
         <div id="gallery-section" class="hidden">
-            <h2 class="text-4xl font-semibold mb-4">Your Gallery <span id="gallery-count" class="text-gray-400 text-lg"></span></h2>
-            <div id="gallery-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 sm:mb-8 gap-4">
+                <div>
+                    <h2 class="text-3xl sm:text-4xl font-semibold tracking-tight">Your Gallery</h2>
+                    <p id="gallery-count" class="text-gray-400 light:text-slate-600 text-sm sm:text-base">0 creations</p>
+                </div>
+                <input id="search" type="text" placeholder="Search..." class="bg-white/5 light:bg-black/5 border-white/10 light:border-black/10 rounded-3xl px-5 sm:px-6 py-3 sm:py-4 w-full sm:w-80 focus:border-yellow-400 outline-none text-sm sm:text-base">
+            </div>
+            <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"></div>
         </div>
 
+        <!-- API SECTION -->
         <div id="api-section" class="hidden">
-            <h2 class="text-5xl font-bold mb-3">API Docs</h2>
-            <p class="text-gray-400 mb-6">Base: <code class="text-yellow-400">https://gen-sand-chi.vercel.app/api/generate</code></p>
-            <pre class="bg-zinc-950 p-6 rounded-2xl"><code>GET /api/generate/pollinations/cute+cat/image
-POST /api/generate/pollinations/explain+AI/chat</code></pre>
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl sm:text-5xl font-bold tracking-tighter mb-3">API Docs</h2>
+                <p class="text-gray-400 light:text-slate-600 mb-6 sm:mb-10 text-sm sm:text-base">Base: <span class="font-mono text-yellow-400 break-all">https://gen-sand-chi.vercel.app/api/generate</span></p>
+
+                <div class="space-y-6 sm:space-y-8">
+                    <div class="glass rounded-3xl p-6 sm:p-8">
+                        <h3 class="text-lg sm:text-2xl font-semibold mb-3">Image / Video</h3>
+                        <pre class="bg-zinc-950/50 light:bg-black/5 p-4 sm:p-6 rounded-2xl overflow-x-auto text-xs sm:text-sm"><code>GET /api/generate/pollinations/cute+anime+cat/image/1024/1024</code></pre>
+                    </div>
+                    <div class="glass rounded-3xl p-6 sm:p-8">
+                        <h3 class="text-lg sm:text-2xl font-semibold mb-3">Chat - No Upload</h3>
+                        <pre class="bg-zinc-950/50 light:bg-black/5 p-4 sm:p-6 rounded-2xl overflow-x-auto text-xs sm:text-sm"><code>GET /api/generate/pollinations/explain+AI/chat</code></pre>
+                    </div>
+                    <div class="glass rounded-3xl p-6 sm:p-8">
+                        <h3 class="text-lg sm:text-2xl font-semibold mb-3">Edit - 7th param = image URL</h3>
+                        <pre class="bg-zinc-950/50 light:bg-black/5 p-4 sm:p-6 rounded-2xl overflow-x-auto text-xs sm:text-sm"><code>GET /api/generate/pollinations/make+him+smile/edit/1024/1024///{encoded_url}</code></pre>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Modal -->
     <div id="modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-        <div class="max-w-4xl w-full bg-zinc-900 rounded-3xl overflow-hidden">
-            <div id="modal-content" class="p-6"></div>
-            <div class="p-6 flex gap-4"><button onclick="closeModal()" class="flex-1 py-4 border-white/30 rounded-2xl">Close</button></div>
+        <div class="max-w-4xl w-full bg-zinc-900 light:bg-white rounded-3xl overflow-hidden">
+            <div id="modal-content" class="p-4 sm:p-6 max-h-[80vh] overflow-auto"></div>
+            <div class="p-4 sm:p-6 flex gap-3 sm:gap-4 border-t border-white/10 light:border-black/10">
+                <button onclick="downloadCurrent()" class="flex-1 py-3 sm:py-4 bg-yellow-400 text-black rounded-2xl font-medium text-sm sm:text-base">Download</button>
+                <button onclick="closeModal()" class="flex-1 py-3 sm:py-4 border-white/30 light:border-black/30 rounded-2xl text-sm sm:text-base">Close</button>
+            </div>
         </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 bg-zinc-800 light:bg-white border-yellow-400 text-yellow-400 light:text-amber-600 px-6 sm:px-8 py-3 sm:py-4 rounded-3xl shadow-2xl z-50 text-sm sm:text-base">
+        <span id="toast-text"></span>
     </div>
 
     <script>
-        const BASE_URL = '/api/generate'; // use relative path so it works on any domain
+        const BASE_URL = '/api/generate'; // Uses vercel.json rewrite
         let gallery = JSON.parse(localStorage.getItem('fluxora_gallery') || '[]');
         let currentMode = 0;
+        let currentItem = null;
+
         const modes = [
             { btn: "GENERATE IMAGE", type: "image" },
             { btn: "GENERATE VIDEO", type: "video" },
@@ -110,74 +187,177 @@ POST /api/generate/pollinations/explain+AI/chat</code></pre>
         ];
 
         function saveGallery() { localStorage.setItem('fluxora_gallery', JSON.stringify(gallery)); }
+
         function renderStats() {
+            const total = gallery.length;
+            const favs = gallery.filter(i => i.favorite).length;
             document.getElementById('stats').innerHTML = `
-                <div class="glass rounded-3xl p-6 text-center"><div class="text-5xl font-bold">${gallery.length}</div><div class="text-sm text-gray-400">Creations</div></div>
-                <div class="glass rounded-3xl p-6 text-center"><div class="text-5xl font-bold">7</div><div class="text-sm text-gray-400">Models</div></div>
-                <div class="glass rounded-3xl p-6 text-center"><div class="text-5xl font-bold">${gallery.filter(i=>i.favorite).length}</div><div class="text-sm text-gray-400">Favorites</div></div>`;
+                <div class="glass rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center">
+                    <div class="text-3xl sm:text-5xl font-bold">${total}</div>
+                    <div class="text-xs sm:text-sm text-gray-400 light:text-slate-500">Creations</div>
+                </div>
+                <div class="glass rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center">
+                    <div class="text-3xl sm:text-5xl font-bold">7</div>
+                    <div class="text-xs sm:text-sm text-gray-400 light:text-slate-500">Models</div>
+                </div>
+                <div class="glass rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-center">
+                    <div class="text-3xl sm:text-5xl font-bold">${favs}</div>
+                    <div class="text-xs sm:text-sm text-gray-400 light:text-slate-500">Favorites</div>
+                </div>
+            `;
         }
-        function renderGallery() {
+
+        function renderGallery(filtered = null) {
             const container = document.getElementById('gallery-grid');
-            document.getElementById('gallery-count').textContent = `${gallery.length} creations`;
-            if (gallery.length === 0) return container.innerHTML = `<div class="col-span-full py-20 text-center text-gray-400">No creations yet</div>`;
-            container.innerHTML = gallery.map((item, i) => `
-                <div class="bg-zinc-900/70 rounded-3xl overflow-hidden card-hover">
-                    <div onclick="openModal(${i})" class="cursor-pointer">
-                        ${item.type === 'video'? `<video src="${item.url}" class="w-full aspect-video object-cover" muted></video>` :
-                          item.type === 'chat'? `<div class="aspect-square p-4 text-sm line-clamp-2">${item.url.slice(0,200)}...</div>` :
-                          `<img src="${item.url}" class="w-full aspect-square object-cover">`}
+            const items = filtered || gallery;
+            document.getElementById('gallery-count').textContent = `${items.length} creations`;
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-16 sm:py-20 text-center text-gray-400 light:text-slate-500 text-sm sm:text-base">No creations yet. Generate something!</div>`;
+                return;
+            }
+
+            container.innerHTML = items.map((item, idx) => `
+                <div class="bg-zinc-900/70 light:bg-white/70 border-white/10 light:border-black/10 rounded-2xl sm:rounded-3xl overflow-hidden card-hover">
+                    <div onclick="openModal(${gallery.indexOf(item)})" class="cursor-pointer">
+                        ${item.type === 'video'? 
+                            `<video src="${item.url}" class="w-full aspect-video object-cover" muted playsinline></video>` : 
+                         item.type === 'chat'?
+                            `<div class="aspect-square p-4 flex items-center justify-center text-xs sm:text-sm line-clamp-2">${item.url.slice(0,180)}...</div>` :
+                            `<img src="${item.url}" class="w-full aspect-square object-cover" loading="lazy">`}
                     </div>
-                    <div class="p-4"><p class="line-clamp-2 text-sm">${item.prompt}</p></div>
-                </div>`).join('');
+                    <div class="p-3 sm:p-4">
+                        <p class="line-clamp-2 text-xs sm:text-sm mb-2 sm:mb-3">${item.prompt}</p>
+                        <div class="flex justify-between items-center text-[11px] sm:text-xs text-gray-400 light:text-slate-500">
+                            <span>${new Date(item.timestamp).toLocaleDateString()}</span>
+                            <div class="flex gap-3 sm:gap-4">
+                                <button onclick="toggleFavorite(${gallery.indexOf(item)});event.stopPropagation()">♥</button>
+                                <button onclick="copyUrl('${item.url}');event.stopPropagation()">📋</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
 
         async function generate() {
             const prompt = document.getElementById('prompt').value.trim();
-            if (!prompt) return alert("Enter a prompt");
+            if (!prompt) return showToast("Enter a prompt", true);
+
             const provider = document.getElementById('provider').value;
             const type = modes[currentMode].type;
-            const w = document.getElementById('width').value;
-            const h = document.getElementById('height').value;
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
             const imageUrl = document.getElementById('edit-image-url').value.trim();
 
             showSection('gallery');
-            let path = `${BASE_URL}/${provider}/${encodeURIComponent(prompt.replace(/ /g, '+'))}/${type}/${w}/${h}`;
-            if (type === 'edit') {
-                if (!imageUrl) return alert("Add image URL for edit");
-                path += `///${encodeURIComponent(imageUrl)}`;
+            const loadingId = 'loading-' + Date.now();
+            document.getElementById('gallery-grid').insertAdjacentHTML('afterbegin', `<div id="${loadingId}" class="bg-zinc-900/70 light:bg-white/70 rounded-3xl p-4 col-span-2 sm:col-span-1"><div class="aspect-video bg-gradient-to-r from-zinc-700 to-zinc-800 light:from-slate-200 light:to-slate-300 animate-pulse rounded-2xl"></div></div>`);
+
+            try {
+                let path = `${BASE_URL}/${provider}/${encodeURIComponent(prompt.replace(/ /g, '+'))}/${type}/${width}/${height}`;
+                if (type === 'edit') {
+                    if (!imageUrl) throw new Error("Add image URL for edit");
+                    path += `///${encodeURIComponent(imageUrl)}`; // 7th param
+                }
+
+                const res = await fetch(path, { method: 'POST' });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || "Failed");
+
+                const newItem = {
+                    url: data.url || data.response,
+                    prompt: prompt,
+                    timestamp: Date.now(),
+                    favorite: false,
+                    type: type
+                };
+
+                gallery.unshift(newItem);
+                saveGallery();
+                renderGallery();
+                renderStats();
+                showToast("✅ Generated!");
+                document.getElementById('prompt').value = '';
+            } catch (err) {
+                showToast(err.message || "Failed", true);
+            } finally {
+                document.getElementById(loadingId)?.remove();
             }
-
-            const res = await fetch(path, { method: 'POST' });
-            const data = await res.json();
-            if (!data.success) return alert(data.error);
-
-            gallery.unshift({ url: data.url || data.response, prompt, timestamp: Date.now(), favorite: false, type });
-            saveGallery();
-            renderGallery();
-            renderStats();
-            document.getElementById('prompt').value = '';
         }
 
-        function openModal(i) {
-            const item = gallery[i];
+        function openModal(index) {
+            currentItem = gallery[index];
             const content = document.getElementById('modal-content');
-            content.innerHTML = item.type === 'chat'? `<div class="p-8 whitespace-pre-wrap">${item.url}</div>` :
-                                item.type === 'video'? `<video src="${item.url}" controls class="w-full rounded-2xl"></video>` :
-                                `<img src="${item.url}" class="w-full rounded-2xl">`;
+            if (currentItem.type === 'chat') {
+                content.innerHTML = `<div class="p-4 sm:p-8 text-sm sm:text-lg leading-relaxed whitespace-pre-wrap">${currentItem.url}</div>`;
+            } else if (currentItem.type === 'video') {
+                content.innerHTML = `<video src="${currentItem.url}" controls playsinline class="w-full rounded-2xl"></video>`;
+            } else {
+                content.innerHTML = `<img src="${currentItem.url}" class="w-full rounded-2xl">`;
+            }
             document.getElementById('modal').classList.remove('hidden');
         }
+
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+        function downloadCurrent() {
+            if (!currentItem || currentItem.type === 'chat') return;
+            const a = document.createElement('a');
+            a.href = currentItem.url;
+            a.download = `fluxora-${Date.now()}.${currentItem.type === 'video'? 'mp4' : 'jpg'}`;
+            a.click();
+        }
+
+        function copyUrl(url) { navigator.clipboard.writeText(url); showToast("Copied"); }
+        function toggleFavorite(index) { gallery[index].favorite =!gallery[index].favorite; saveGallery(); renderGallery(); renderStats(); }
+        function clearGallery() { if (confirm("Clear all?")) { gallery = []; saveGallery(); renderGallery(); renderStats(); }
+
+        function showToast(text, error = false) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-text').textContent = text;
+            toast.style.borderColor = error? '#ef4444' : '#facc15';
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 2500);
+        }
+
         function switchMode(n) {
             currentMode = n;
             document.querySelectorAll('.tab-btn').forEach((btn, i) => btn.classList.toggle('active', i === n));
             document.getElementById('generate-btn-text').textContent = modes[n].btn;
             document.getElementById('edit-image-url').classList.toggle('hidden', n!== 3);
         }
-        function showSection(s) {
-            ['create','gallery','api'].forEach(x => document.getElementById(x+'-section').classList.toggle('hidden', x!== s));
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.textContent.toLowerCase().includes(s)));
+
+        function showSection(section) {
+            ['create','gallery','api'].forEach(s => document.getElementById(s+'-section').classList.toggle('hidden', s!== section));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.toggle('active', l.textContent.toLowerCase().includes(section)));
         }
-        window.onload = () => { renderStats(); renderGallery(); };
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('light');
+            const icon = document.getElementById('theme-icon');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+            localStorage.setItem('fluxora_theme', document.documentElement.classList.contains('light')? 'light' : 'dark');
+        }
+
+        function init() {
+            if (localStorage.getItem('fluxora_theme') === 'light') {
+                document.documentElement.classList.add('light');
+                document.getElementById('theme-icon').classList.replace('fa-moon', 'fa-sun');
+            }
+            renderStats();
+            renderGallery();
+            showSection('create');
+            switchMode(0);
+
+            document.getElementById('search').addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                renderGallery(gallery.filter(item => item.prompt.toLowerCase().includes(term)));
+            });
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
