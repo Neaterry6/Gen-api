@@ -1,6 +1,4 @@
-// pages/api/generate/[...slug].js
-export const config = { api: { bodyParser: false } };
-
+// api/generate.js - Vercel Serverless Function
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -13,8 +11,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const slug = req.query.slug || [];
-    const [providerRaw, promptRaw, type = "image", width = "1024", height = "1024", duration = "5", seed, imageEncoded] = slug;
+    // URL: /api/generate/pollinations/cute+cat/image/1024/1024
+    // req.url = "/api/generate/pollinations/cute+cat/image/1024/1024"
+    const parts = req.url.replace('/api/generate/', '').split('/');
+    const [providerRaw, promptRaw, type = "image", width = "1024", height = "1024", duration = "5", seed, imageEncoded] = parts;
 
     if (!providerRaw ||!promptRaw) {
       return res.status(400).json({
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     }
 
     const provider = providerRaw.toLowerCase();
-    const prompt = decodeURIComponent(promptRaw.replace(/\+/g, " "));
+    const prompt = decodeURIComponent(promptRaw.replace(/\+/g, "));
     const w = parseInt(width) || 1024;
     const h = parseInt(height) || 1024;
     const dur = Math.min(parseInt(duration) || 5, 10);
